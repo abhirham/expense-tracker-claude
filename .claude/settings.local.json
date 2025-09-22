@@ -1,8 +1,7 @@
 {
   "permissions": {
     "allow": [
-      "WebSearch",
-      "Bash(git :*)"
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []
