@@ -164,7 +164,7 @@ export class TDBankAdapter extends BaseBankAdapter {
             date,
             description: description.substring(0, 100), // Limit description length
             amount,
-            category: 'other', // Default category, will be categorized later
+            category: 'Misc', // Default category, will be categorized later
             createdAt: new Date(),
             updatedAt: new Date()
           };

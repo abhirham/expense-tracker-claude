@@ -41,15 +41,22 @@ export interface Transaction {
 
 // Transaction Categories
 export type TransactionCategory =
-  | 'housing'
-  | 'transportation'
-  | 'food-dining'
-  | 'entertainment'
-  | 'healthcare'
-  | 'shopping'
-  | 'financial-services'
-  | 'income'
-  | 'other';
+  | 'Restaurants'
+  | 'Groceries'
+  | 'Car'
+  | 'Entertainment'
+  | 'Coffee Shop'
+  | 'Shopping'
+  | 'Home'
+  | 'Cne'
+  | 'Transport'
+  | 'Health'
+  | 'Pets'
+  | 'Misc'
+  | 'Family'
+  | 'Personal Care'
+  | 'Financial'
+  | 'Utilities';
 
 export interface CategoryInfo {
   id: TransactionCategory;

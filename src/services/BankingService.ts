@@ -1,5 +1,6 @@
 import { bankRegistry } from './banking/registry';
 import { accountService } from './AccountService';
+import { transactionCategorizationService, TransactionData } from './TransactionCategorizationService';
 import { Account, DateRange, Transaction } from '../types';
 
 export interface BankConnectionResult {
@@ -147,21 +148,52 @@ export class BankingService {
       // Simulate network delay
       await new Promise(resolve => setTimeout(resolve, 1500));
 
-      // Return mock transaction data
-      const mockTransactions: Transaction[] = accountIds.map((accountId, index) => ({
-        id: `mock_tx_${accountId}_${index}_${Date.now()}`,
+      // Create mock transaction data with realistic Canadian merchants
+      const mockTransactionData: TransactionData[] = [
+        {
+          merchant: 'Tim Hortons #2341',
+          description: 'TIM HORTONS #2341 TORONTO ON',
+          amount: -4.87,
+          date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000)
+        },
+        {
+          merchant: 'Loblaws',
+          description: 'LOBLAWS GROCERY TORONTO ON',
+          amount: -87.43,
+          date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
+        },
+        {
+          merchant: 'Petro-Canada',
+          description: 'PETRO-CANADA #1234 TORONTO ON',
+          amount: -65.21,
+          date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000)
+        },
+        {
+          merchant: 'Netflix',
+          description: 'NETFLIX.COM MONTHLY',
+          amount: -16.99,
+          date: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000)
+        },
+        {
+          merchant: 'Rogers Communications',
+          description: 'ROGERS WIRELESS MONTHLY',
+          amount: -85.00,
+          date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000)
+        }
+      ];
+
+      // Categorize transactions using Claude
+      const categorizedResults = await transactionCategorizationService.categorizeBatch(mockTransactionData);
+
+      // Create final transactions with categories
+      const mockTransactions: Transaction[] = mockTransactionData.map((transactionData, index) => ({
+        id: `mock_tx_${accountIds[index % accountIds.length]}_${index}_${Date.now()}`,
         userId,
-        accountId,
-        date: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000),
-        description: [
-          'Coffee Shop Purchase',
-          'Grocery Store',
-          'Gas Station',
-          'Online Purchase',
-          'ATM Withdrawal'
-        ][index % 5],
-        amount: -(Math.random() * 100 + 10),
-        category: 'other',
+        accountId: accountIds[index % accountIds.length],
+        date: transactionData.date,
+        description: transactionData.description,
+        amount: transactionData.amount,
+        category: categorizedResults[index]?.category || 'Misc',
         createdAt: new Date(),
         updatedAt: new Date()
       }));
