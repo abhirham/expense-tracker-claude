@@ -1,4 +1,25 @@
-import { Page } from 'playwright';
+// Mock Page interface for browser compatibility
+interface PageElement {
+  textContent: () => Promise<string | null>;
+  $: (selector: string) => Promise<PageElement | null>;
+  click: () => Promise<void>;
+  fill: (text: string) => Promise<void>;
+}
+
+interface Page {
+  goto: (url: string) => Promise<void>;
+  waitForSelector: (selector: string, options?: { timeout?: number }) => Promise<void>;
+  waitForTimeout: (timeout: number) => Promise<void>;
+  $: (selector: string) => Promise<PageElement | null>;
+  $$: (selector: string) => Promise<PageElement[]>;
+  title: () => Promise<string>;
+  url: () => string;
+  screenshot: (options: { path: string; fullPage?: boolean }) => Promise<void>;
+  fill: (selector: string, text: string) => Promise<void>;
+  click: (selector: string) => Promise<void>;
+  close: () => Promise<void>;
+  textContent: () => Promise<string | null>;
+}
 import { Account, Transaction, SessionCredentials, DateRange } from '../../../types';
 
 export abstract class BaseBankAdapter {
@@ -7,10 +28,10 @@ export abstract class BaseBankAdapter {
   abstract readonly loginUrl: string;
 
   constructor() {
-    this.validateImplementation();
+    // No validation in constructor due to inheritance timing
   }
 
-  private validateImplementation(): void {
+  protected validateImplementation(): void {
     if (!this.bankName) {
       throw new Error(`Bank adapter must define bankName`);
     }
@@ -140,7 +161,7 @@ export abstract class BaseBankAdapter {
   }
 
   protected async takeScreenshot(page: Page, name: string): Promise<void> {
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env.DEV) {
       try {
         await page.screenshot({
           path: `screenshots/${this.bankName}_${name}_${Date.now()}.png`,
