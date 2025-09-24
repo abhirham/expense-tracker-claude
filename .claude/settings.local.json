@@ -16,7 +16,11 @@
       "Bash(npm run firebase:emulators:*)",
       "mcp__playwright__browser_wait_for",
       "mcp__playwright__browser_console_messages",
-      "Bash(echo $VITE_USE_EMULATORS)"
+      "Bash(echo $VITE_USE_EMULATORS)",
+      "Bash(npm run build:*)",
+      "mcp__playwright__browser_take_screenshot",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []
