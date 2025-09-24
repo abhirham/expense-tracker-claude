@@ -25,6 +25,18 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   return <>{children}</>;
 };
 
+const App: React.FC = () => {
+  return (
+    <AuthProvider>
+      <Router>
+        <div className="min-h-screen bg-gray-50">
+          <AppRoutes />
+        </div>
+      </Router>
+    </AuthProvider>
+  );
+};
+
 const AppRoutes: React.FC = () => {
   const { user, isLoading } = useAuth();
 
@@ -55,18 +67,6 @@ const AppRoutes: React.FC = () => {
       </Route>
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
-  );
-};
-
-const App: React.FC = () => {
-  return (
-    <AuthProvider>
-      <Router>
-        <div className="min-h-screen bg-gray-50">
-          <AppRoutes />
-        </div>
-      </Router>
-    </AuthProvider>
   );
 };
 

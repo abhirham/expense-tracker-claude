@@ -110,7 +110,7 @@ export interface TransactionParseResult {
 export interface ParseError {
   row: number;
   field: string;
-  value: any;
+  value: unknown;
   error: string;
 }
 
@@ -152,7 +152,7 @@ export interface ErrorState {
   hasError: boolean;
   message?: string;
   code?: string;
-  details?: any;
+  details?: Record<string, unknown>;
 }
 
 // API Response Types
@@ -162,7 +162,7 @@ export interface ApiResponse<T> {
   error?: {
     code: string;
     message: string;
-    details?: any;
+    details?: Record<string, unknown>;
   };
   timestamp: Date;
 }
@@ -189,7 +189,7 @@ export interface AuditLog {
   action: string;
   resource: string;
   resourceId: string;
-  details?: any;
+  details?: Record<string, unknown>;
   ipAddress?: string;
   userAgent?: string;
   timestamp: Date;

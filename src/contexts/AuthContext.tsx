@@ -2,18 +2,15 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import {
   User as FirebaseUser,
   onAuthStateChanged,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signOut,
-  updateProfile
+  signInWithPopup,
+  signOut
 } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { auth, db } from '../config/firebase';
+import { auth, db, googleProvider } from '../config/firebase';
 import { AuthUser, AuthState } from '../types';
 
 interface AuthContextType extends AuthState {
-  login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, fullName: string) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -42,43 +39,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     createdAt: new Date(firebaseUser.metadata.creationTime!)
   });
 
-  const login = async (email: string, password: string): Promise<void> => {
+  const loginWithGoogle = async (): Promise<void> => {
     try {
       setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const authUser = convertFirebaseUser(userCredential.user);
-      setAuthState({ user: authUser, isLoading: false, error: null });
-    } catch (error: any) {
-      const errorMessage = error.message || 'Login failed';
-      setAuthState({ user: null, isLoading: false, error: errorMessage });
-      throw new Error(errorMessage);
-    }
-  };
+      console.log('Starting Google sign-in...');
+      const userCredential = await signInWithPopup(auth, googleProvider);
+      console.log('Google sign-in successful:', userCredential.user.email);
 
-  const register = async (email: string, password: string, fullName: string): Promise<void> => {
-    try {
-      setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
-
-      // Create user account
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-
-      // Update profile with display name
-      await updateProfile(userCredential.user, { displayName: fullName });
-
-      // Create user document in Firestore
+      // Create or update user document in Firestore
       const userDoc = {
-        fullName,
-        email,
+        fullName: userCredential.user.displayName || 'Google User',
+        email: userCredential.user.email!,
         createdAt: new Date(),
         lastLogin: new Date()
       };
 
-      await setDoc(doc(db, 'users', userCredential.user.uid), userDoc);
+      await setDoc(doc(db, 'users', userCredential.user.uid), userDoc, { merge: true });
+      console.log('User document created/updated in Firestore');
 
-      const authUser = convertFirebaseUser(userCredential.user);
-      setAuthState({ user: authUser, isLoading: false, error: null });
-    } catch (error: any) {
-      const errorMessage = error.message || 'Registration failed';
+      // Note: Don't set auth state here - let onAuthStateChanged handle it
+      // This prevents race conditions between manual state setting and Firebase listener
+    } catch (error: unknown) {
+      console.error('Google sign-in error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Google sign-in failed';
       setAuthState({ user: null, isLoading: false, error: errorMessage });
       throw new Error(errorMessage);
     }
@@ -88,15 +71,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       await signOut(auth);
       setAuthState({ user: null, isLoading: false, error: null });
-    } catch (error: any) {
-      const errorMessage = error.message || 'Logout failed';
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Logout failed';
       setAuthState(prev => ({ ...prev, error: errorMessage }));
       throw new Error(errorMessage);
     }
   };
 
   useEffect(() => {
+    console.log('Setting up auth state listener...');
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      console.log('Auth state changed:', firebaseUser ? `User: ${firebaseUser.email}` : 'No user');
+
       if (firebaseUser) {
         try {
           // Get additional user data from Firestore
@@ -104,23 +90,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const userDoc = await getDoc(userDocRef);
 
           if (!userDoc.exists()) {
+            console.log('Creating new user document...');
             // Create user document if it doesn't exist
             const userData = {
-              fullName: firebaseUser.displayName || 'Unknown User',
+              fullName: firebaseUser.displayName || 'Google User',
               email: firebaseUser.email!,
               createdAt: new Date(),
               lastLogin: new Date()
             };
             await setDoc(userDocRef, userData);
+          } else {
+            console.log('Updating existing user document...');
+            // Update last login time
+            await setDoc(userDocRef, { lastLogin: new Date() }, { merge: true });
           }
 
           const authUser = convertFirebaseUser(firebaseUser);
+          console.log('Setting auth state with user:', authUser.email);
           setAuthState({ user: authUser, isLoading: false, error: null });
-        } catch (error: any) {
+        } catch (error: unknown) {
           console.error('Error loading user data:', error);
-          setAuthState({ user: null, isLoading: false, error: error.message });
+          setAuthState({ user: null, isLoading: false, error: error instanceof Error ? error.message : 'Authentication error' });
         }
       } else {
+        console.log('No user - setting auth state to null');
         setAuthState({ user: null, isLoading: false, error: null });
       }
     });
@@ -130,8 +123,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const value: AuthContextType = {
     ...authState,
-    login,
-    register,
+    loginWithGoogle,
     logout
   };
 
