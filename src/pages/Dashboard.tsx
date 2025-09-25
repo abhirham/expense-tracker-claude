@@ -1,14 +1,11 @@
 import React from 'react';
-import { useAuth } from '../hooks/useAuth';
 
 const Dashboard: React.FC = () => {
-  const { user } = useAuth();
-
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600">Welcome back, {user?.displayName || user?.email}</p>
+        <p className="text-gray-600">Welcome to your Finance Tracker</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -90,13 +87,22 @@ const Dashboard: React.FC = () => {
       <div className="card">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <button className="btn-primary">
+          <button
+            className="btn-primary"
+            onClick={() => window.location.href = '/accounts'}
+          >
             Link Bank Account
           </button>
-          <button className="btn-secondary">
-            Import Transactions
+          <button
+            className="btn-secondary"
+            onClick={() => window.location.href = '/transactions'}
+          >
+            View Transactions
           </button>
-          <button className="btn-secondary">
+          <button
+            className="btn-secondary"
+            onClick={() => window.location.href = '/reports'}
+          >
             Generate Report
           </button>
         </div>

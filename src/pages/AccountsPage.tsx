@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '../hooks/useAuth';
 import { Account } from '../types';
-import { accountService } from '../services/AccountService';
-import { bankingService } from '../services/BankingService';
+import { apiClient } from '../services/api/client';
 import BankConnectionModal from '../components/Banking/BankConnectionModal';
+import BankCredentialsModal from '../components/Banking/BankCredentialsModal';
 import AccountSelectionModal from '../components/Banking/AccountSelectionModal';
 import LoadingSpinner from '../components/UI/LoadingSpinner';
 import {
@@ -15,10 +14,10 @@ import {
 } from '@heroicons/react/24/outline';
 
 const AccountsPage: React.FC = () => {
-  const { user } = useAuth();
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(true);
   const [connectionModal, setConnectionModal] = useState(false);
+  const [credentialsModal, setCredentialsModal] = useState(false);
   const [selectionModal, setSelectionModal] = useState(false);
   const [discoveredAccounts, setDiscoveredAccounts] = useState<Account[]>([]);
   const [selectedBankName, setSelectedBankName] = useState<string>('');
@@ -27,10 +26,10 @@ const AccountsPage: React.FC = () => {
 
   const loadAccounts = useCallback(async () => {
     try {
-      if (!user) return;
       setLoading(true);
-      const userAccounts = await accountService.getUserAccounts(user.uid);
-      setAccounts(userAccounts);
+      // Load accounts from localStorage (temporary solution)
+      const savedAccounts = JSON.parse(localStorage.getItem('userAccounts') || '[]');
+      setAccounts(savedAccounts);
       setError('');
     } catch (error) {
       console.error('Failed to load accounts:', error);
@@ -38,32 +37,35 @@ const AccountsPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, []);
 
   useEffect(() => {
-    if (user) {
-      loadAccounts();
-    }
-  }, [user, loadAccounts]);
+    loadAccounts();
+  }, [loadAccounts]);
 
-  const handleBankSelection = async (bankName: string) => {
-    if (!user) return;
-
+  const handleBankSelection = (bankName: string) => {
     setSelectedBankName(bankName);
     setConnectionModal(false);
+    setCredentialsModal(true);
+  };
+
+  const handleCredentialsSubmit = async (credentials: { username: string; password: string }) => {
     setConnecting(true);
     setError('');
 
     try {
-      const result = await bankingService.connectToBank(user.uid, bankName);
+      console.log(`Connecting to ${selectedBankName} with credentials...`);
 
-      if (result.success && result.accounts.length > 0) {
-        setDiscoveredAccounts(result.accounts);
-        setSelectionModal(true);
-      } else {
-        setError(result.error || 'No accounts found');
-      }
+      // Call the backend API to connect to the bank
+      const bankAccounts = await apiClient.connectToBank(selectedBankName, credentials);
+
+      console.log(`Found ${bankAccounts.length} accounts for ${selectedBankName}`);
+      setDiscoveredAccounts(bankAccounts);
+      setCredentialsModal(false);
+      setSelectionModal(true);
+
     } catch (error) {
+      console.error('Bank connection failed:', error);
       setError(error instanceof Error ? error.message : 'Connection failed');
     } finally {
       setConnecting(false);
@@ -71,12 +73,13 @@ const AccountsPage: React.FC = () => {
   };
 
   const handleAccountSelection = async (selectedAccounts: Account[]) => {
-    if (!user) return;
-
     try {
       setConnecting(true);
-      const savedAccounts = await bankingService.saveSelectedAccounts(user.uid, selectedAccounts);
-      setAccounts(prevAccounts => [...prevAccounts, ...savedAccounts]);
+      // TODO: Replace with API call to backend
+      const existingAccounts = JSON.parse(localStorage.getItem('userAccounts') || '[]');
+      const updatedAccounts = [...existingAccounts, ...selectedAccounts];
+      localStorage.setItem('userAccounts', JSON.stringify(updatedAccounts));
+      setAccounts(updatedAccounts);
       setSelectionModal(false);
       setDiscoveredAccounts([]);
       setSelectedBankName('');
@@ -90,23 +93,27 @@ const AccountsPage: React.FC = () => {
 
   const toggleAccountStatus = async (accountId: string, currentStatus: boolean) => {
     try {
-      await accountService.setAccountActive(accountId, !currentStatus);
-      setAccounts(prevAccounts =>
-        prevAccounts.map(acc =>
-          acc.id === accountId ? { ...acc, isActive: !currentStatus } : acc
-        )
+      // TODO: Replace with API call to backend
+      const existingAccounts = JSON.parse(localStorage.getItem('userAccounts') || '[]');
+      const updatedAccounts = existingAccounts.map((acc: Account) =>
+        acc.id === accountId ? { ...acc, isActive: !currentStatus } : acc
       );
+      localStorage.setItem('userAccounts', JSON.stringify(updatedAccounts));
+      setAccounts(updatedAccounts);
     } catch {
       setError('Failed to update account status');
     }
   };
 
   const deleteAccount = async (accountId: string) => {
-    if (!user || !confirm('Are you sure you want to unlink this account?')) return;
+    if (!confirm('Are you sure you want to unlink this account?')) return;
 
     try {
-      await accountService.deleteAccount(user.uid, accountId);
-      setAccounts(prevAccounts => prevAccounts.filter(acc => acc.id !== accountId));
+      // TODO: Replace with API call to backend
+      const existingAccounts = JSON.parse(localStorage.getItem('userAccounts') || '[]');
+      const updatedAccounts = existingAccounts.filter((acc: Account) => acc.id !== accountId);
+      localStorage.setItem('userAccounts', JSON.stringify(updatedAccounts));
+      setAccounts(updatedAccounts);
     } catch {
       setError('Failed to delete account');
     }
@@ -225,7 +232,7 @@ const AccountsPage: React.FC = () => {
                   {formatBalance(account.balance)}
                 </div>
                 <div className="text-xs text-gray-500">
-                  {accountService.getSanitizedAccount(account).maskedAccountNumber}
+                  ****{account.accountNumber.slice(-4)}
                 </div>
               </div>
 
@@ -269,6 +276,17 @@ const AccountsPage: React.FC = () => {
         isOpen={connectionModal}
         onClose={() => setConnectionModal(false)}
         onSelectBank={handleBankSelection}
+      />
+
+      <BankCredentialsModal
+        isOpen={credentialsModal}
+        onClose={() => {
+          setCredentialsModal(false);
+          setSelectedBankName('');
+        }}
+        onSubmit={handleCredentialsSubmit}
+        bankName={selectedBankName}
+        isLoading={connecting}
       />
 
       <AccountSelectionModal

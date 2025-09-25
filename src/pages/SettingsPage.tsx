@@ -1,43 +1,34 @@
 import React from 'react';
-import { useAuth } from '../hooks/useAuth';
 
 const SettingsPage: React.FC = () => {
-  const { user } = useAuth();
-
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="card">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Profile Information</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Application Settings</h3>
           <div className="space-y-4">
             <div>
-              <label className="label">Full Name</label>
-              <input
-                type="text"
-                className="input-field"
-                value={user?.displayName || ''}
-                readOnly
-              />
+              <label className="label">Currency</label>
+              <select className="input-field" defaultValue="CAD">
+                <option value="CAD">Canadian Dollar (CAD)</option>
+              </select>
             </div>
             <div>
-              <label className="label">Email Address</label>
-              <input
-                type="email"
-                className="input-field"
-                value={user?.email || ''}
-                readOnly
-              />
+              <label className="label">Date Format</label>
+              <select className="input-field" defaultValue="DD/MM/YYYY">
+                <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+              </select>
             </div>
             <div>
-              <label className="label">Account Created</label>
-              <input
-                type="text"
-                className="input-field"
-                value={user?.createdAt?.toLocaleDateString() || ''}
-                readOnly
-              />
+              <label className="label">Language</label>
+              <select className="input-field" defaultValue="en-CA">
+                <option value="en-CA">English (Canada)</option>
+                <option value="fr-CA">Français (Canada)</option>
+              </select>
             </div>
           </div>
         </div>
