@@ -4,7 +4,7 @@
 Local finance tracking application for Ontario, Canada banks using SimpleFin Bridge to fetch transactions and Claude AI to categorize them.
 
 ## Tech Stack
-- **Language**: Python 3.x
+- **Language**: Python 3.9+
 - **APIs**: SimpleFin Bridge API, Anthropic Claude AI API
 - **Dependencies**: requests, anthropic, python-dotenv
 
