@@ -1,4 +1,4 @@
 description = "Categorizes transactions"
 prompt = """
-categorize the transactions in @Input.md.
+categorize the transactions in @Input.md. You are to process the transactions directly. Do not create any scripts or intermediary files.
 """
