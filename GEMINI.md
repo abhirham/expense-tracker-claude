@@ -89,6 +89,7 @@ The `Input.md` file will contain sections starting with `--> [type]`. The follow
 
   - Input columns will be implicitly be: `Date`, `Description (desc)`, `Debit`, `Credit`, `Balance`.
   - The "Merchant" for the output should be derived from the "Description" (`desc`) field.
+  - For these transactions, an additional "Person" column with the static value "Sushma" should be included in the output, making the output format for these transactions: `Date`, `Merchant`, `Amount`, `Category`, `Person`.
 
 - **Type: "amazon"**
 
@@ -113,6 +114,6 @@ The `Input.md` file will contain sections starting with `--> [type]`. The follow
     
     **Implementation Notes:**
     
-    - When generating the output file, it is recommended to generate the entire content as a single string and then write it to the `Output.md` file in one go. This avoids issues with file overwriting and race conditions.
-    - Be careful with shell command syntax, especially with here-documents (`cat <<EOF`). Ensure that the `EOF` marker is on a new line and not indented. If you encounter issues, consider using alternative methods to write to files, such as generating the content in a script and using `write_file`.
+    - You are to process the transactions directly. Do not create any scripts or intermediary files.
+    - Generate the entire TSV output as a single string and write it to `Output.md` in one operation.
     
