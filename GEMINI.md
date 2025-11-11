@@ -15,6 +15,7 @@ Here are the strict rules you must follow:
       - "Walmart" (or any variation of "Walmart" in the merchant name/description) is always "Groceries".
       - "CIBC Loans" and "Cooperators" are always "Car".
       - "Monthly Fees" is always "Utilities".
+      - "Petro-Canada" is always "Car".
     - **General Categories:**
       - Savings
       - Rent
@@ -111,6 +112,12 @@ The `Input.md` file will contain sections starting with `--> [type]`. The follow
     - If the lent column says "lent you", the Amount is positive (meaning the user has received money/they owe less).
     - If the lent column says "not involved", the Amount is 0.
     - If the paid column says "you received", the Amount is negative (this rule overrides any lent status and should use the lent value, as the "lent" amount is what was received in the transfer).
+
+- **Type: "rbc"**
+
+  - Input will be in CSV format with the following columns: `Account Type`, `Account Number`, `Transaction Date`, `Cheque Number`, `Description 1`, `Description 2`, `CAD$`, `USD$`.
+  - The "Merchant" for the output should be derived from the "Description 1" and "Description 2" fields.
+  - The "Amount" for the output is the negated value of the "CAD$" column.
     
     **Implementation Notes:**
     
