@@ -1,0 +1,4 @@
+description = "Resets Input.md."
+prompt = """
+clear @Input.md and add the specified type headers so I can input the transaction data accordingly.
+"""

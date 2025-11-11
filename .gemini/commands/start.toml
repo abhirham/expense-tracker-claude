@@ -1,0 +1,4 @@
+description = "Categorizes transactions"
+prompt = """
+categorize the transactions in @Input.md.
+"""
