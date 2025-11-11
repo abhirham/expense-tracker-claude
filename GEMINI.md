@@ -5,7 +5,7 @@ The `Input.md` file will contain sections starting with a visually distinct head
 Here are the strict rules you must follow:
 
 1.  **Output Format:** The final output must be a clean Tab Separated Value (TSV) string, ready to be pasted into Google Sheets. Each line must contain the following data in this exact order: `Date`, `Merchant`, `Amount`, `Category`. Do not include column headers in the output.
-2.  **Grouping:** The output must be grouped by the transaction type from `Input.md`. Each group must be preceded by a header row indicating the type in title case (e.g., `Scotia Momentum`, `TD Abhi`). Do not include the `-->` prefix or any extra dashes in the output header.
+2.  **Grouping:** The output must be grouped by the transaction type from `Input.md`. Each group must be preceded by an empty row, followed by a header row indicating the type in title case (e.g., `Scotia Momentum`, `TD Abhi`). Do not include the `-->` prefix or any extra dashes in the output header.
 3.  **Amount Calculation:**
     - Debit/Withdrawal amounts should be positive signed float values.
     - Credit/Deposit amounts should be negative signed float values.
@@ -118,6 +118,14 @@ The `Input.md` file will contain sections starting with `--> [type]`. The follow
   - Input will be in CSV format with the following columns: `Account Type`, `Account Number`, `Transaction Date`, `Cheque Number`, `Description 1`, `Description 2`, `CAD$`, `USD$`.
   - The "Merchant" for the output should be derived from the "Description 1" and "Description 2" fields.
   - The "Amount" for the output is the negated value of the "CAD$" column.
+
+- **Type: "wealthsimple"**
+
+  - Input is a multi-line format where each transaction can have a variable number of lines.
+  - The date is on its own line.
+  - The merchant description can span one or more lines following the date.
+  - The amount is on the line directly after the merchant description.
+  - The amount line will contain "− $" for debits and "$"" for credits.
     
     **Implementation Notes:**
     
