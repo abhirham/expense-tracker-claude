@@ -68,23 +68,19 @@ The `Input.md` file will contain sections starting with `--> [type]`. The follow
     --> ---====================================================================================---
     2025-04-01	POS PURCHASE POPEYE'S SUPPLEMENTS BRAMPTON ON	180.79		1200.50
     ```
+  
 
-- **Type: "td"**
+- **Type: "TD Abhi"**
 
   - Input columns will be implicitly be: `Date`, `Description (desc)`, `Debit`, `Credit`, `Balance`.
   - The "Merchant" for the output should be derived from the "Description" (`desc`) field.
   - Example:
     ```
     --> ---====================================================================================---
-    --> ---================================== td ==============================================---
+    --> ---================================== TD Abhi =========================================---
     --> ---====================================================================================---
     Jun 5, 2025PRESTO MOBI/5H5FFC6PHG$50.00$1,983.54
     ```
-
-- **Type: "TD Abhi"**
-
-  - Input columns will be implicitly be: `Date`, `Description (desc)`, `Debit`, `Credit`, `Balance`.
-  - The "Merchant" for the output should be derived from the "Description" (`desc`) field.
 
 - **Type: "TD Sushma"**
 
@@ -112,6 +108,7 @@ The `Input.md` file will contain sections starting with `--> [type]`. The follow
     - If the lent column says "lent you", the Amount is positive (meaning the user has received money/they owe less).
     - If the lent column says "not involved", the Amount is 0.
     - If the paid column says "you received", the Amount is negative (this rule overrides any lent status and should use the lent value, as the "lent" amount is what was received in the transfer).
+    - Ignore all transactions with the description "Settle all balances".
 
 - **Type: "rbc"**
 
@@ -126,6 +123,22 @@ The `Input.md` file will contain sections starting with `--> [type]`. The follow
   - The merchant description can span one or more lines following the date.
   - The amount is on the line directly after the merchant description.
   - The amount line will contain "− $" for debits and "$"" for credits.
+
+- **Type: "cibc"**
+
+  - Input is a multi-line format where each transaction can have a variable number of lines.
+  - The date is on its own line.
+  - The merchant description can span one or more lines following the date.
+  - The amount is on the line directly after the card number.
+  - The amount line will contain "−$" for debits and "$" for credits.
+  - Example:
+    ```
+    Nov 30, 2025
+    CHECK INSTALLMENT ELIGIBILITY
+    Retail and GroceryCOSTCO WHOLESALE W526 MISSISSAUGA, ON
+    5268********1514
+    −$668.06
+    ```
     
     **Implementation Notes:**
     
