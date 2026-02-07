@@ -78,6 +78,7 @@ Savings, Rent, Utilities, Car, Entertainment, Groceries, Health, Pets, Shopping,
     * Line 2: Amount impact ("You owe...", "You get back...").
     * Line 3: Date (Relative or Short Date like "Jan 29").
 * **Logic:**
+    * **Exclusion:** Completely ignore any transaction where the description contains "Settle all balances".
     * **Merchant:** Extract text inside quotation marks (e.g., “Costco”).
     * **Amount:**
         * "You owe" / "Lent you" -> **Positive** (Expense).
