@@ -1,4 +1,7 @@
 description = "Categorizes transactions"
 prompt = """
-categorize the transactions in @Input.md. You are to process the transactions directly. Do not create any scripts or intermediary files.
+Analyze the data in @Input.md and generate the categorized TSV content for @Output.md.
+
+Strictly follow the formatting and logic rules defined in your system instructions.
+Output **only** the final TSV string. Do not include any conversational text, markdown code blocks, or explanations.
 """
