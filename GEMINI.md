@@ -103,12 +103,18 @@ The `Input.md` file will contain sections starting with `--> [type]`. The follow
 
 - **Type: "splitwise"**
 
-  - When processing Splitwise data (with columns: date, desc, paid, lent), the Amount in the final table must represent the change to the user's net balance (what they are owed/owe), and is calculated using the value in the lent column, based on the following rules:
-    - If the lent column says "you lent", the Amount is negative (meaning money has left the user's pocket/they are owed).
-    - If the lent column says "lent you", the Amount is positive (meaning the user has received money/they owe less).
-    - If the lent column says "not involved", the Amount is 0.
-    - If the paid column says "you received", the Amount is negative (this rule overrides any lent status and should use the lent value, as the "lent" amount is what was received in the transfer).
-    - Ignore all transactions with the description "Settle all balances".
+  - **Date Handling:** Convert relative dates (e.g., "Wednesday", "Tuesday") to exact dates (YYYY-MM-DD) based on the context of the file (December 2025). Assume the file is chronological or reverse-chronological and infer the correct date (e.g., if "Dec 28" appears after "Tuesday", that Tuesday is likely Dec 30 or Dec 23 depending on order). Dec 31, 2025 was a Wednesday.
+  - **Merchant Extraction:** Extract the actual item/service name from the description.
+    - Example: "Pranav A. added “Milk ”" -> Merchant: "Milk".
+    - Example: "You added “Whiskey”" -> Merchant: "Whiskey".
+    - Example: "You added “Walmart”" -> Merchant: "Walmart".
+  - **Amount Calculation:**
+    - Calculate the user's net impact.
+    - "You lent" / "You get back" -> Negative Amount (Money Out/Owed to you).
+    - "Lent you" / "You owe" -> Positive Amount (Expense/You consumed).
+    - "You received" -> Negative Amount (Income/Reimbursement).
+    - "Paid" -> Positive Amount (Expense/Paying back).
+  - **Exclusions:** Ignore "Settle all balances" transactions.
 
 - **Type: "rbc"**
 
@@ -118,11 +124,17 @@ The `Input.md` file will contain sections starting with `--> [type]`. The follow
 
 - **Type: "wealthsimple"**
 
-  - Input is a multi-line format where each transaction can have a variable number of lines.
-  - The date is on its own line.
-  - The merchant description can span one or more lines following the date.
-  - The amount is on the line directly after the merchant description.
-  - The amount line will contain "− $" for debits and "$"" for credits.
+  - Input is a multi-line format.
+  - **Date:** Located on its own line (e.g., "December 31, 2025").
+  - **Merchant:** Use the text on the lines between the Date and the Amount. **Ignore** generic banking terms like "Interac e-Transfer", "Chequing", "Bill pay", "Direct deposit", "Pre-authorized debit", "Transfer out", "Transfer in", "Funds earned" when determining the merchant, unless that is the only text available. If a specific note or name (e.g., "New Year Party", "Rent Caledon", "Enbridge") is present, use that as the Merchant.
+  - **Amount:** Located on the line starting with "$" or "− $".
+  - **Sign:** "− $" indicates a Debit (Positive Output). "$" indicates a Credit (Negative Output). **Note:** This reverses the standard "Credit=Negative" logic if the input explicitly marks debits with minus signs. Wait, standard Wealthsimple: "- $50" is usually money leaving (Debit). " $50" is money entering (Credit).
+    - Rule Check:
+      - Global Rule 3: "Debit/Withdrawal amounts should be positive... Credit/Deposit amounts should be negative".
+      - Wealthsimple Input: "− $440.00" (Money Out/Debit).
+      - Output Amount: Should be **440.00** (Positive).
+      - Wealthsimple Input: "$16,126.55" (Money In/Credit).
+      - Output Amount: Should be **-16126.55** (Negative).
 
 - **Type: "cibc"**
 
